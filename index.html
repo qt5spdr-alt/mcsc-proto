@@ -1,8 +1,99 @@
-<iframe 
-  src="https://qt5spdr-alt.github.io/mcsc-proto/" 
-  width="100%" 
-  height="780"
-  frameborder="0" 
-  scrolling="no"
-  style="border-radius:12px; border:1px solid #e0dfd9; display:block;">
-</iframe>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:#111110}
+.proto{font-family:system-ui,sans-serif;display:flex;flex-direction:column;height:100vh}
+.topbar{background:#fff;border-bottom:1px solid #e0dfd9;padding:8px 16px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex-shrink:0}
+.grp{display:flex;align-items:center;gap:4px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:background .15s}
+.grp:hover{background:#f0efe9}
+.grp.active{background:#e6f1fb}
+.gnum{width:18px;height:18px;border-radius:50%;background:#f0efe9;border:1px solid #d3d1c7;font-size:10px;font-weight:500;color:#6b6b67;display:flex;align-items:center;justify-content:center}
+.grp.active .gnum{background:#1877F2;color:#fff;border-color:#1877F2}
+.glabel{font-size:11px;color:#6b6b67}
+.grp.active .glabel{color:#185FA5;font-weight:500}
+.sep{font-size:11px;color:#ccc}
+.counter{font-size:11px;color:#aaa;margin-left:auto}
+.hint{background:#f0efe9;border-bottom:1px solid #e0dfd9;padding:4px 16px;font-size:11px;color:#8c8b86;text-align:center;flex-shrink:0}
+.screen{flex:1;background:#111110;display:flex;align-items:center;justify-content:center;padding:16px;min-height:0}
+.screen img{max-width:100%;max-height:100%;width:auto;height:auto;border-radius:8px;display:block;box-shadow:0 2px 8px rgba(0,0,0,.5),0 16px 48px rgba(0,0,0,.6),0 0 0 .5px rgba(255,255,255,.07);object-fit:contain}
+.nav{background:#fff;border-top:1px solid #e0dfd9;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0}
+.cap{font-size:11px;color:#6b6b67;flex:1;text-align:center;line-height:1.4;padding:0 8px}
+.btn{padding:6px 14px;border-radius:6px;border:1px solid #d3d1c7;background:#fff;color:#2c2c2a;font-size:13px;font-weight:500;cursor:pointer;font-family:system-ui,sans-serif;white-space:nowrap}
+.btn:hover{background:#f5f4f0}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn-p{background:#1877F2;color:#fff;border-color:#1877F2}
+.btn-p:hover{background:#1464cc}
+</style>
+</head>
+<body>
+<div class="proto">
+  <div class="topbar">
+    <div class="grp active" id="cg0" onclick="goGroup(0)"><div class="gnum">1</div><span class="glabel">Entry</span></div>
+    <span class="sep">›</span>
+    <div class="grp" id="cg1" onclick="goGroup(3)"><div class="gnum">2</div><span class="glabel">3-step flow</span></div>
+    <span class="sep">›</span>
+    <div class="grp" id="cg2" onclick="goGroup(7)"><div class="gnum">3</div><span class="glabel">Post-submit</span></div>
+    <span class="sep">›</span>
+    <div class="grp" id="cg3" onclick="goGroup(11)"><div class="gnum">4</div><span class="glabel">Agent portal</span></div>
+    <span class="counter" id="cnt">1 / 13</span>
+  </div>
+  <div class="hint">End assignment early — Meta CSC · 13 screens</div>
+  <div class="screen" id="screen"></div>
+  <div class="nav">
+    <button class="btn" id="btnP" onclick="go(-1)" disabled>← prev</button>
+    <span class="cap" id="cap"></span>
+    <button class="btn btn-p" id="btnN" onclick="go(1)">next →</button>
+  </div>
+</div>
+
+<script>
+var S=[
+  {src:"https://images.squarespace-cdn.com/content/648d311a65728852ce0190ce/27942199-a9b7-4600-8522-6152c935c5a8/00_Manage+CSC+.png?content-type=image%2Fpng",label:"Worker list",caption:"CWAM lands on Manage contingent workers — 20 active assignments with status, subtype, and reporting manager"},
+  {src:"https://images.squarespace-cdn.com/content/648d311a65728852ce0190ce/5518c4eb-4764-45cd-b4c8-ab68e71c01ce/00_Manage+CSC_End+Assignment.png?content-type=image%2Fpng",label:"End assignment action",caption:"Three-dot menu reveals contextual actions — 'End assignment' selected for Rafaela Fernandes"},
+  {src:"https://images.squarespace-cdn.com/content/648d311a65728852ce0190ce/04e5c7ef-fbf9-409f-a398-3b47aa7ea429/00-1_Details+Panel.png?content-type=image%2Fpng",label:"Details panel",caption:"Side panel shows full assignment details — contract dates, cost center, team, and SRT info"},
+  {src:"https://images.squarespace-cdn.com/content/648d311a65728852ce0190ce/15745f55-3698-4132-9acd-bf87728ec087/1_Choose+End+Assignment.png?content-type=image%2Fpng",label:"Step 1: Choose type",caption:"Step 1 of 3 — choose end assignment type: early vs. immediately, with clear consequence descriptions"},
+  {src:"https://images.squarespace-cdn.com/content/648d311a65728852ce0190ce/35dc6090-f259-49f9-8476-1955db207186/2_End+Assignment+Early+Selected.png?content-type=image%2Fpng",label:"Early selected",caption:"'End assignment early' selected — highlighted state with blue fill, request title field editable"},
+  {src:"https://images.squarespace-cdn.com/content/648d311a65728852ce0190ce/1b579bd2-b63c-45cf-8ecd-c016e3575989/3_Add+Details.png?content-type=image%2Fpng",label:"Step 2: Add details",caption:"Step 2 of 3 — current end date locked, updated date entered, reason from dropdown, optional notes"},
+  {src:"https://images.squarespace-cdn.com/content/648d311a65728852ce0190ce/b52cf7ae-21d3-45c7-b003-22dd40feb99f/4_Summary.png?content-type=image%2Fpng",label:"Step 3: Summary",caption:"Step 3 of 3 — change highlighted: 01/26/2025 → 12/01/2024. Full review before submit"},
+  {src:"https://images.squarespace-cdn.com/content/648d311a65728852ce0190ce/f1ba17f9-d815-44be-82f6-f3ac8969df72/5_Manage+CSC-Post+Offboarding.png?content-type=image%2Fpng",label:"Post-submit list",caption:"After submission — info badge on Rafaela's row indicates active change request in progress"},
+  {src:"https://images.squarespace-cdn.com/content/648d311a65728852ce0190ce/36c7badc-047e-48fa-9e36-c55fdbbf442e/6_Manage+CSC-Post+Offboarding-Change+requests.png?content-type=image%2Fpng",label:"Change requests tab",caption:"Side panel Change requests tab — current request badged, past requests accessible"},
+  {src:"https://images.squarespace-cdn.com/content/648d311a65728852ce0190ce/13ae912e-2b06-42fa-a871-23ff503df8af/7_Request+tracker.png?content-type=image%2Fpng",label:"Request tracker",caption:"3-step status tracker: Submitted → Review and approval (in progress) → Completed with timelines"},
+  {src:"https://images.squarespace-cdn.com/content/648d311a65728852ce0190ce/9c14f6e0-e851-4242-b1a5-2ca704429afd/8_CSC+-+request+details+modal.png?content-type=image%2Fpng",label:"Request details modal",caption:"Expanded request detail — full change log, requester info, comments thread between CWAM and CWx"},
+  {src:"https://images.squarespace-cdn.com/content/648d311a65728852ce0190ce/41fdf6b5-a634-4233-8a79-e4dce2b137b2/9_Agent+portal+-+Early+offboard-+request+details.png?content-type=image%2Fpng",label:"Agent portal: Forms",caption:"Agent view in BUY@ — Forms tab shows submitted request details for review with Action button"},
+  {src:"https://images.squarespace-cdn.com/content/648d311a65728852ce0190ce/633c65a4-f6af-4115-8c30-c0f8433cd373/10_Agent+portal+-+Early+offboard-+request+details.png?content-type=image%2Fpng",label:"Agent portal: Status",caption:"Agent view in BUY@ — Status tab with 3-step tracker and estimated timelines. Comments persist"}
+];
+
+var cur=0;
+var groups=[[0,2],[3,6],[7,10],[11,12]];
+var img=document.createElement('img');
+img.style.opacity='0';
+img.style.transition='opacity 0.15s ease';
+img.onload=function(){img.style.opacity='1'};
+document.getElementById('screen').appendChild(img);
+
+function render(){
+  var s=S[cur];
+  document.getElementById('cnt').textContent=(cur+1)+' / '+S.length;
+  document.getElementById('cap').textContent=s.caption;
+  document.getElementById('btnP').disabled=cur===0;
+  var bn=document.getElementById('btnN');
+  bn.disabled=cur===S.length-1;
+  bn.textContent=cur===S.length-1?'end':'next →';
+  img.style.opacity='0';
+  img.src=s.src;
+  img.alt=s.label;
+  groups.forEach(function(r,i){
+    document.getElementById('cg'+i).classList.toggle('active',cur>=r[0]&&cur<=r[1]);
+  });
+}
+
+function go(d){cur=Math.max(0,Math.min(S.length-1,cur+d));render();}
+function goGroup(n){cur=n;render();}
+render();
+</script>
+</body>
+</html>
